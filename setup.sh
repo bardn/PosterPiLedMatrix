@@ -27,8 +27,8 @@ Description=Poster Display Script
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/pi/PosterPi/posters.py
-WorkingDirectory=/home/pi/PosterPi
+ExecStart=/usr/bin/python3 /home/pi/PosterPiLedMatrix/posters.py
+WorkingDirectory=/home/pi/PosterPiLedMatrix
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
