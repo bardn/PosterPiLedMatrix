@@ -4,6 +4,7 @@ from PIL import Image
 from io import BytesIO
 import time
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
+from threading import Lock
 
 # Load configuration from file
 config_file_path = 'config.json'
@@ -27,15 +28,19 @@ fill_image = True  # Toggle to allow image to fill matrix
 zoom_percentage = 8  # Zoom level as a percentage (e.g., 10 means zoom in by 10%)
 offset_pixels = -10  # Offset in pixels (e.g., 10 means offset by 10 pixels)
 
+# Create a lock for the matrix
+matrix_lock = Lock()
+
 def setup_matrix():
     global matrix
     options = RGBMatrixOptions()
     options.rows = 64
-    options.cols = 64  # Set the number of columns to 64
+    options.cols = 64
     options.chain_length = 1
     options.parallel = 1
     options.hardware_mapping = 'adafruit-hat'
     options.brightness = 80
+    options.gpio_slowdown = 4
     matrix = RGBMatrix(options=options)
 
 def fetch_currently_watching():
@@ -125,13 +130,15 @@ def display_poster(poster_url):
             img = resize_image(img, (matrix.width, matrix.height), fill_image, zoom_percentage, offset_pixels)
             img = img.convert('RGB')
 
-            # Clear the canvas before updating
-            matrix.Clear()
-            print("Canvas cleared")
+            # Lock the matrix for display
+            with matrix_lock:
+                # Clear the canvas before updating
+                matrix.Clear()
+                print("Canvas cleared")
 
-            # Update display with image
-            matrix.SetImage(img)
-            print("Image displayed")
+                # Update display with image
+                matrix.SetImage(img)
+                print("Image displayed")
 
             previous_poster_url = poster_url
         except requests.RequestException as e:
